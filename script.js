@@ -374,3 +374,18 @@ if (musicToggle) {
     { passive: true }
   );
 }
+
+function checkDoorCollision() {
+  const playerFront = state.playerX + state.playerWidth * 0.7;
+  const doorStart = state.doorX;
+
+  if (playerFront > doorStart - 260) {
+    door?.classList.add("is-awake");
+  } else {
+    door?.classList.remove("is-awake");
+  }
+
+  if (!state.finished && playerFront >= doorStart) {
+    finishJourney();
+  }
+}

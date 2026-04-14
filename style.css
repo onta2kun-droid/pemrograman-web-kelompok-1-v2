@@ -352,41 +352,6 @@ button {
   right: 0;
 }
 
-.door {
-  position: absolute;
-  left: 6140px;
-  bottom: 88px;
-  width: 110px;
-  height: 180px;
-  z-index: 7;
-}
-
-.door__glow {
-  position: absolute;
-  inset: -18px;
-  border-radius: 30px;
-  background: radial-gradient(circle, rgba(200,165,107,0.22), transparent 65%);
-  filter: blur(10px);
-  animation: pulseDoor 2.2s ease-in-out infinite;
-}
-
-.door__frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-  border-radius: 22px;
-  background: linear-gradient(180deg, #8f6b3f, #5c4326);
-  box-shadow: var(--shadow);
-}
-
-.door__inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(236,230,220,0.92), rgba(200,165,107,0.38));
-}
-
 .ground {
   position: absolute;
   left: 0;
@@ -433,11 +398,6 @@ button {
 @keyframes floatCard {
   0%, 100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-12px) scale(1); }
-}
-
-@keyframes pulseDoor {
-  0%, 100% { opacity: 0.55; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1.03); }
 }
 
 @media (max-width: 900px) {
@@ -487,10 +447,6 @@ button {
 
   .player {
     bottom: 98px;
-  }
-
-  .door {
-    bottom: 94px;
   }
 
   .floating-card {
@@ -742,4 +698,343 @@ button {
     width: 44px;
     height: 44px;
   }
+}
+
+.door {
+  position: absolute;
+  left: 6080px;
+  bottom: 78px;
+  width: 190px;
+  height: 260px;
+  z-index: 7;
+  image-rendering: pixelated;
+}
+
+.door__aura {
+  position: absolute;
+  inset: -34px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle, rgba(200,165,107,0.20) 0%, rgba(200,165,107,0.10) 38%, transparent 72%);
+  filter: blur(12px);
+  animation: doorAuraPulse 2.6s ease-in-out infinite;
+}
+
+.door__roots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.root {
+  position: absolute;
+  display: block;
+  background: linear-gradient(180deg, #5a6f91, #31425e);
+  box-shadow: 0 0 0 1px rgba(200,165,107,0.08);
+  transform-origin: top center;
+}
+
+.root::before,
+.root::after {
+  content: "";
+  position: absolute;
+  background: linear-gradient(180deg, #6e87ad, #354864);
+}
+
+.root--1 {
+  left: 20px;
+  bottom: 38px;
+  width: 10px;
+  height: 90px;
+  transform: rotate(32deg);
+}
+.root--1::before {
+  width: 8px;
+  height: 42px;
+  left: -10px;
+  top: 24px;
+  transform: rotate(-38deg);
+}
+.root--1::after {
+  width: 7px;
+  height: 28px;
+  left: 8px;
+  top: 48px;
+  transform: rotate(34deg);
+}
+
+.root--2 {
+  left: 42px;
+  bottom: 18px;
+  width: 8px;
+  height: 72px;
+  transform: rotate(18deg);
+}
+.root--2::before {
+  width: 6px;
+  height: 32px;
+  left: 8px;
+  top: 18px;
+  transform: rotate(30deg);
+}
+
+.root--3 {
+  right: 26px;
+  bottom: 34px;
+  width: 10px;
+  height: 96px;
+  transform: rotate(-28deg);
+}
+.root--3::before {
+  width: 8px;
+  height: 38px;
+  right: -8px;
+  top: 26px;
+  transform: rotate(36deg);
+}
+.root--3::after {
+  width: 6px;
+  height: 26px;
+  right: 8px;
+  top: 54px;
+  transform: rotate(-26deg);
+}
+
+.root--4 {
+  right: 48px;
+  bottom: 16px;
+  width: 8px;
+  height: 68px;
+  transform: rotate(-16deg);
+}
+.root--4::before {
+  width: 6px;
+  height: 30px;
+  right: 8px;
+  top: 14px;
+  transform: rotate(-34deg);
+}
+
+.root--5 {
+  left: 68px;
+  bottom: -4px;
+  width: 8px;
+  height: 58px;
+  transform: rotate(6deg);
+}
+.root--5::before {
+  width: 6px;
+  height: 24px;
+  left: -8px;
+  top: 18px;
+  transform: rotate(-28deg);
+}
+
+.root--6 {
+  right: 70px;
+  bottom: -2px;
+  width: 8px;
+  height: 54px;
+  transform: rotate(-6deg);
+}
+.root--6::before {
+  width: 6px;
+  height: 24px;
+  right: -8px;
+  top: 16px;
+  transform: rotate(26deg);
+}
+
+.door__pillars {
+  position: absolute;
+  inset: 16px 0 0;
+}
+
+.pillar {
+  position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 210px;
+  background:
+    linear-gradient(180deg, #88673d 0%, #5c4327 100%);
+  box-shadow:
+    inset -4px 0 0 rgba(0,0,0,0.14),
+    inset 4px 0 0 rgba(255,255,255,0.05),
+    0 0 0 2px rgba(17, 21, 27, 0.34);
+}
+
+.pillar::before,
+.pillar::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  width: 32px;
+  height: 16px;
+  background: linear-gradient(180deg, #a07a49, #6a4d2c);
+}
+
+.pillar::before {
+  top: -10px;
+}
+
+.pillar::after {
+  bottom: -6px;
+}
+
+.pillar--left {
+  left: 18px;
+}
+
+.pillar--right {
+  right: 18px;
+}
+
+.door__portal {
+  position: absolute;
+  left: 47px;
+  bottom: 18px;
+  width: 96px;
+  height: 196px;
+  border: 4px solid rgba(104, 75, 40, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(28, 22, 16, 0.65),
+    0 0 26px rgba(200,165,107,0.12);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+}
+
+.door__pixel-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      to right,
+      rgba(255,255,255,0.06) 0 2px,
+      transparent 2px 12px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04) 0 2px,
+      transparent 2px 12px
+    );
+  opacity: 0.22;
+  mix-blend-mode: screen;
+}
+
+.door__inner-light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,244,220,0.95) 0%, rgba(233,198,132,0.65) 24%, rgba(112,164,255,0.18) 62%, rgba(0,0,0,0) 100%);
+  animation: doorLightPulse 2s ease-in-out infinite;
+}
+
+.door__core {
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  width: 28px;
+  height: 126px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.9), rgba(231,197,135,0.72) 45%, rgba(120,172,255,0.16));
+  filter: blur(1px);
+  animation: doorCoreShimmer 1.8s ease-in-out infinite;
+}
+
+.door__sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.door__sparkles span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #fff1cc;
+  box-shadow: 0 0 10px rgba(255, 241, 204, 0.7);
+  animation: sparkleFloat 2.2s ease-in-out infinite;
+}
+
+.door__sparkles span:nth-child(1) {
+  left: 38px;
+  top: 34px;
+  animation-delay: 0s;
+}
+.door__sparkles span:nth-child(2) {
+  right: 34px;
+  top: 58px;
+  animation-delay: 0.45s;
+}
+.door__sparkles span:nth-child(3) {
+  left: 48px;
+  bottom: 72px;
+  animation-delay: 0.9s;
+}
+.door__sparkles span:nth-child(4) {
+  right: 42px;
+  bottom: 50px;
+  animation-delay: 1.3s;
+}
+
+@keyframes doorAuraPulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes doorLightPulse {
+  0%, 100% {
+    opacity: 0.82;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.04);
+  }
+}
+
+@keyframes doorCoreShimmer {
+  0%, 100% {
+    opacity: 0.75;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1.06);
+  }
+}
+
+@keyframes sparkleFloat {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translateY(0) scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+.door.is-awake .door__aura {
+  animation-duration: 1.4s;
+}
+
+.door.is-awake .door__inner-light {
+  opacity: 1;
+}
+
+.door.is-awake .door__core {
+  animation-duration: 1.1s;
+}
+
+.door.is-awake .root {
+  filter: drop-shadow(0 0 8px rgba(142, 164, 199, 0.22));
 }
