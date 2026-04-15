@@ -56,39 +56,55 @@ const state = {
 
 const quizQuestions = [
   {
-    question: "Apa fungsi utama sistem operasi?",
-    answers: [
-      "Mengelola perangkat keras dan software",
-      "Meningkatkan kualitas monitor",
-    ],
-    correct: 0,
+    question: "Komputer pertama di dunia bernama?",
+    answers: ["ENIAC", "Windows"],
+    correctIndex: 0
   },
   {
-    question: "Manakah yang termasuk sistem operasi?",
-    answers: ["Windows", "Microsoft Word"],
-    correct: 0,
+    question: "Generasi pertama komputer menggunakan?",
+    answers: ["Touchscreen", "Tabung vakum"],
+    correctIndex: 1
   },
   {
-    question: "Apa tugas kernel dalam sistem operasi?",
-    answers: [
-      "Mengatur inti komunikasi antara hardware dan software",
-      "Menghias tampilan desktop",
-    ],
-    correct: 0,
+    question: "Siapa yang dikenal sebagai bapak komputer?",
+    answers: ["Charles Babbage", "Elon Musk"],
+    correctIndex: 0
   },
   {
-    question: "Sistem operasi mobile yang umum dipakai adalah...",
-    answers: ["Android", "Photoshop"],
-    correct: 0,
+    question: "Komputer generasi kedua menggunakan?",
+    answers: ["Lampu LED", "Transistor"],
+    correctIndex: 1
   },
   {
-    question: "Mengapa sistem operasi penting?",
-    answers: [
-      "Karena menjadi penghubung antara pengguna, aplikasi, dan perangkat",
-      "Karena hanya dipakai untuk membuka file musik",
-    ],
-    correct: 0,
+    question: "Media penyimpanan pada komputer lama adalah?",
+    answers: ["Punch Card", "Flashdisk"],
+    correctIndex: 0
   },
+  {
+    question: "Komputer generasi ketiga menggunakan?",
+    answers: ["Keyboard RGB", "Integrated Circuit"],
+    correctIndex: 1
+  },
+  {
+    question: "Komputer generasi keempat ditandai dengan?",
+    answers: ["Mikroprosesor", "Tabung vakum"],
+    correctIndex: 0
+  },
+  {
+    question: "Internet pertama kali dikembangkan dari proyek?",
+    answers: ["Facebook", "ARPANET"],
+    correctIndex: 1
+  },
+  {
+    question: "CPU adalah singkatan dari?",
+    answers: ["Central Processing Unit", "Computer Personal Unit"],
+    correctIndex: 0
+  },
+  {
+    question: "RAM berfungsi untuk?",
+    answers: ["Menyimpan data permanen", "Menyimpan data sementara"],
+    correctIndex: 1
+  }
 ];
 
 const quizState = {
@@ -497,30 +513,23 @@ function renderQuestion() {
   });
 }
 
-function resetQuiz() {
-  quizState.active = true;
-  quizState.lives = 3;
-  quizState.current = 0;
-  renderLives();
-  renderQuestion();
-}
-
 function handleAnswer(selectedIndex) {
   if (!quizState.active) return;
 
   const current = quizQuestions[quizState.current];
   if (!current) return;
 
-  const isCorrect = current.correct === selectedIndex;
+  const isCorrect = selectedIndex === current.correctIndex;
 
   answerA?.classList.remove("is-correct", "is-wrong");
   answerB?.classList.remove("is-correct", "is-wrong");
 
   const selectedDoor = selectedIndex === 0 ? answerA : answerB;
-  const correctDoor = current.correct === 0 ? answerA : answerB;
+  const correctDoor = current.correctIndex === 0 ? answerA : answerB;
 
   if (isCorrect) {
     selectedDoor?.classList.add("is-correct");
+
     if (quizFeedback) {
       quizFeedback.textContent = "Benar. Melangkah ke pertanyaan berikutnya...";
     }
