@@ -58,53 +58,53 @@ const quizQuestions = [
   {
     question: "Komputer pertama di dunia bernama?",
     answers: ["ENIAC", "Windows"],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     question: "Generasi pertama komputer menggunakan?",
     answers: ["Touchscreen", "Tabung vakum"],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     question: "Siapa yang dikenal sebagai bapak komputer?",
     answers: ["Charles Babbage", "Elon Musk"],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     question: "Komputer generasi kedua menggunakan?",
     answers: ["Lampu LED", "Transistor"],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     question: "Media penyimpanan pada komputer lama adalah?",
     answers: ["Punch Card", "Flashdisk"],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     question: "Komputer generasi ketiga menggunakan?",
     answers: ["Keyboard RGB", "Integrated Circuit"],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     question: "Komputer generasi keempat ditandai dengan?",
     answers: ["Mikroprosesor", "Tabung vakum"],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     question: "Internet pertama kali dikembangkan dari proyek?",
     answers: ["Facebook", "ARPANET"],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     question: "CPU adalah singkatan dari?",
     answers: ["Central Processing Unit", "Computer Personal Unit"],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     question: "RAM berfungsi untuk?",
     answers: ["Menyimpan data permanen", "Menyimpan data sementara"],
-    correctIndex: 1
-  }
+    correctIndex: 1,
+  },
 ];
 
 const quizState = {
@@ -122,12 +122,24 @@ const quizMoveState = {
   locked: false,
 };
 
+let quizTransitionTimeout = null;
+let quizTransitioning = false;
+
 let isMuted = false;
 let fadeFrame = null;
 
-/* HELPERS */
+/* =========================
+   HELPERS
+========================= */
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function clearQuizTimeout() {
+  if (quizTransitionTimeout) {
+    clearTimeout(quizTransitionTimeout);
+    quizTransitionTimeout = null;
+  }
 }
 
 function updateMetrics() {
@@ -153,8 +165,8 @@ function updateQuizMovementBounds() {
 
   const laneCenter = laneRect.left + laneRect.width / 2;
 
-  const leftTarget = (leftRect.left + leftRect.width / 2) - laneCenter;
-  const rightTarget = (rightRect.left + rightRect.width / 2) - laneCenter;
+  const leftTarget = leftRect.left + leftRect.width / 2 - laneCenter;
+  const rightTarget = rightRect.left + rightRect.width / 2 - laneCenter;
 
   const extraReach = playerWidth * 0.35;
 
@@ -173,7 +185,9 @@ function setPressed(direction, isPressed) {
   if (direction === "right") state.movingRight = isPressed;
 }
 
-/* PLAYER / CAMERA */
+/* =========================
+   PLAYER / CAMERA
+========================= */
 function updatePlayerDirection() {
   if (state.movingLeft && !state.movingRight) {
     state.direction = -1;
@@ -234,7 +248,9 @@ function revealCards() {
   });
 }
 
-/* QUIZ PLAYER */
+/* =========================
+   QUIZ PLAYER
+========================= */
 function updateQuizPlayer() {
   if (!quizPlayer) return;
 
@@ -253,16 +269,39 @@ function updateQuizPlayer() {
 
 function resetQuizPlayerPosition() {
   quizMoveState.x = 0;
-  quizMoveState.locked = false;
-  updateQuizMovementBounds();
-  updateQuizPlayer();
+  state.movingLeft = false;
+  state.movingRight = false;
 
   answerA?.classList.remove("is-correct", "is-wrong", "is-awake");
   answerB?.classList.remove("is-correct", "is-wrong", "is-awake");
+
+  updateQuizPlayer();
+}
+
+function armQuizQuestion() {
+  quizTransitioning = true;
+  quizMoveState.locked = true;
+  quizMoveState.active = false;
+
+  resetQuizPlayerPosition();
+
+  requestAnimationFrame(() => {
+    updateQuizMovementBounds();
+    resetQuizPlayerPosition();
+
+    requestAnimationFrame(() => {
+      state.movingLeft = false;
+      state.movingRight = false;
+      quizMoveState.locked = false;
+      quizMoveState.active = true;
+      quizTransitioning = false;
+      updateQuizPlayer();
+    });
+  });
 }
 
 function moveQuizPlayer() {
-  if (!quizState.active || quizMoveState.locked) return;
+  if (!quizState.active || !quizMoveState.active || quizMoveState.locked) return;
 
   if (state.movingLeft && !state.movingRight) {
     quizMoveState.x -= quizMoveState.speed;
@@ -283,7 +322,15 @@ function moveQuizPlayer() {
 }
 
 function checkQuizDoorCollision() {
-  if (!quizState.active || quizMoveState.locked || !quizPlayer || !answerA || !answerB) {
+  if (
+    !quizState.active ||
+    !quizMoveState.active ||
+    quizMoveState.locked ||
+    quizTransitioning ||
+    !quizPlayer ||
+    !answerA ||
+    !answerB
+  ) {
     return;
   }
 
@@ -305,25 +352,27 @@ function checkQuizDoorCollision() {
   const leftDistance = Math.abs(playerCenterX - leftCenterX);
   const rightDistance = Math.abs(playerCenterX - rightCenterX);
 
-  const sameHeightLeft = playerBottom > leftRect.top + 18;
-  const sameHeightRight = playerBottom > rightRect.top + 18;
+  const sameHeightLeft = playerBottom > leftRect.top + 12;
+  const sameHeightRight = playerBottom > rightRect.top + 12;
 
-  answerA.classList.toggle("is-awake", leftDistance < 58 && sameHeightLeft);
-  answerB.classList.toggle("is-awake", rightDistance < 58 && sameHeightRight);
+  answerA.classList.toggle("is-awake", leftDistance < 44 && sameHeightLeft);
+  answerB.classList.toggle("is-awake", rightDistance < 44 && sameHeightRight);
 
-  if (leftDistance < 18 && sameHeightLeft) {
+  if (leftDistance < 12 && sameHeightLeft) {
     quizMoveState.locked = true;
     handleAnswer(0);
     return;
   }
 
-  if (rightDistance < 18 && sameHeightRight) {
+  if (rightDistance < 12 && sameHeightRight) {
     quizMoveState.locked = true;
     handleAnswer(1);
   }
 }
 
-/* GAME FLOW */
+/* =========================
+   GAME FLOW
+========================= */
 function openChoiceScreen() {
   state.finished = true;
   state.movingLeft = false;
@@ -348,13 +397,15 @@ function closeChoiceScreen() {
 
 function openQuiz() {
   closeChoiceScreen();
+  clearQuizTimeout();
 
   quizState.active = true;
   quizState.lives = 3;
   quizState.current = 0;
 
-  quizMoveState.active = true;
-  quizMoveState.locked = false;
+  quizMoveState.x = 0;
+  quizMoveState.active = false;
+  quizMoveState.locked = true;
 
   if (quizScreen) {
     quizScreen.classList.remove("is-hidden-screen");
@@ -365,12 +416,6 @@ function openQuiz() {
   renderLives();
   renderQuestion();
 
-  requestAnimationFrame(() => {
-    updateQuizMovementBounds();
-    resetQuizPlayerPosition();
-    updateQuizPlayer();
-  });
-
   state.finished = false;
   startLoop();
 }
@@ -379,6 +424,8 @@ function closeQuiz() {
   quizState.active = false;
   quizMoveState.active = false;
   quizMoveState.locked = false;
+  quizTransitioning = false;
+  clearQuizTimeout();
 
   if (quizScreen) {
     quizScreen.classList.remove("is-visible");
@@ -472,7 +519,9 @@ function checkDoorCollision() {
   }
 }
 
-/* QUIZ */
+/* =========================
+   QUIZ
+========================= */
 function renderLives() {
   if (!quizLives) return;
 
@@ -507,19 +556,42 @@ function renderQuestion() {
     quizFeedback.textContent = "";
   }
 
-  requestAnimationFrame(() => {
-    updateQuizMovementBounds();
-    resetQuizPlayerPosition();
-  });
+  armQuizQuestion();
+}
+
+function resetQuiz() {
+  clearQuizTimeout();
+
+  quizState.active = true;
+  quizState.lives = 3;
+  quizState.current = 0;
+
+  quizMoveState.x = 0;
+  quizMoveState.active = false;
+  quizMoveState.locked = true;
+
+  state.movingLeft = false;
+  state.movingRight = false;
+
+  renderLives();
+  renderQuestion();
 }
 
 function handleAnswer(selectedIndex) {
-  if (!quizState.active) return;
+  if (!quizState.active || quizTransitioning) return;
 
   const current = quizQuestions[quizState.current];
   if (!current) return;
 
   const isCorrect = selectedIndex === current.correctIndex;
+
+  quizTransitioning = true;
+  quizMoveState.locked = true;
+  quizMoveState.active = false;
+
+  state.movingLeft = false;
+  state.movingRight = false;
+  updateQuizPlayer();
 
   answerA?.classList.remove("is-correct", "is-wrong");
   answerB?.classList.remove("is-correct", "is-wrong");
@@ -534,49 +606,60 @@ function handleAnswer(selectedIndex) {
       quizFeedback.textContent = "Benar. Melangkah ke pertanyaan berikutnya...";
     }
 
-    setTimeout(() => {
+    quizTransitionTimeout = setTimeout(() => {
+      quizTransitionTimeout = null;
       quizState.current += 1;
 
       if (quizState.current >= quizQuestions.length) {
         showOutroAfterQuiz();
-      } else {
-        renderQuestion();
+        return;
       }
+
+      renderQuestion();
     }, 900);
-  } else {
-    selectedDoor?.classList.add("is-wrong");
-    correctDoor?.classList.add("is-correct");
-    quizState.lives -= 1;
-    renderLives();
 
-    if (quizState.lives <= 0) {
-      if (quizFeedback) {
-        quizFeedback.textContent = "Nyawamu habis. Quiz akan diulang dari awal.";
-      }
-
-      setTimeout(() => {
-        resetQuiz();
-      }, 1200);
-    } else {
-      if (quizFeedback) {
-        quizFeedback.textContent =
-          "Kurang tepat. Tetap lanjut ke pertanyaan berikutnya.";
-      }
-
-      setTimeout(() => {
-        quizState.current += 1;
-
-        if (quizState.current >= quizQuestions.length) {
-          showOutroAfterQuiz();
-        } else {
-          renderQuestion();
-        }
-      }, 1000);
-    }
+    return;
   }
+
+  selectedDoor?.classList.add("is-wrong");
+  correctDoor?.classList.add("is-correct");
+
+  quizState.lives -= 1;
+  renderLives();
+
+  if (quizState.lives <= 0) {
+    if (quizFeedback) {
+      quizFeedback.textContent = "Nyawamu habis. Quiz akan diulang dari awal.";
+    }
+
+    quizTransitionTimeout = setTimeout(() => {
+      quizTransitionTimeout = null;
+      resetQuiz();
+    }, 1200);
+
+    return;
+  }
+
+  if (quizFeedback) {
+    quizFeedback.textContent = "Kurang tepat. Tetap lanjut ke pertanyaan berikutnya.";
+  }
+
+  quizTransitionTimeout = setTimeout(() => {
+    quizTransitionTimeout = null;
+    quizState.current += 1;
+
+    if (quizState.current >= quizQuestions.length) {
+      showOutroAfterQuiz();
+      return;
+    }
+
+    renderQuestion();
+  }, 1000);
 }
 
-/* LOOP */
+/* =========================
+   LOOP
+========================= */
 function gameLoop(timestamp) {
   if (!state.started || state.finished) return;
 
@@ -604,7 +687,9 @@ function startLoop() {
   state.rafId = requestAnimationFrame(gameLoop);
 }
 
-/* INPUT */
+/* =========================
+   INPUT
+========================= */
 function handleKey(event, isPressed) {
   const key = event.key.toLowerCase();
 
@@ -640,7 +725,9 @@ function bindPressable(button, direction) {
   button.addEventListener("touchcancel", pressEnd, { passive: false });
 }
 
-/* MUSIC */
+/* =========================
+   MUSIC
+========================= */
 function setMusicIcon() {
   if (!musicIcon) return;
 
@@ -726,7 +813,9 @@ async function unmuteMusic() {
   }
 }
 
-/* EVENTS */
+/* =========================
+   EVENTS
+========================= */
 window.addEventListener("keydown", (event) => handleKey(event, true));
 window.addEventListener("keyup", (event) => handleKey(event, false));
 
@@ -783,18 +872,30 @@ if (musicToggle) {
   };
 
   musicToggle.addEventListener("click", handleMusicToggle);
-  musicToggle.addEventListener("touchend", handleMusicToggle, { passive: false });
+  musicToggle.addEventListener("touchend", handleMusicToggle, {
+    passive: false,
+  });
 
-  musicToggle.addEventListener("touchstart", (event) => {
-    event.stopPropagation();
-  }, { passive: true });
+  musicToggle.addEventListener(
+    "touchstart",
+    (event) => {
+      event.stopPropagation();
+    },
+    { passive: true }
+  );
 
-  musicToggle.addEventListener("touchmove", (event) => {
-    event.stopPropagation();
-  }, { passive: true });
+  musicToggle.addEventListener(
+    "touchmove",
+    (event) => {
+      event.stopPropagation();
+    },
+    { passive: true }
+  );
 }
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
 updateMetrics();
 updateCamera();
 updateProgress();
