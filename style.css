@@ -1395,3 +1395,17 @@ button {
     font-size: 14px;
   }
 }
+
+.hud__title,
+.hud__progress {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(17, 21, 27, 0.42);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  backdrop-filter: blur(8px);
+}
+
+.hud__progress {
+  margin-left: auto;
+}
