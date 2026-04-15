@@ -25,6 +25,8 @@ const answerB = document.getElementById("answerB");
 const answerAText = document.getElementById("answerAText");
 const answerBText = document.getElementById("answerBText");
 const quizFeedback = document.getElementById("quizFeedback");
+const quizPlayer = document.getElementById("quizPlayer");
+const quizPlayerLane = document.querySelector(".quiz-player-lane");
 
 const bgMusic = document.getElementById("bgMusic");
 const musicToggle = document.getElementById("musicToggle");
@@ -95,12 +97,19 @@ const quizState = {
   current: 0,
 };
 
+const quizMoveState = {
+  active: false,
+  x: 0,
+  minX: -520,
+  maxX: 520,
+  speed: 4.2,
+  locked: false,
+};
+
 let isMuted = false;
 let fadeFrame = null;
 
-/* =========================
-   HELPERS
-========================= */
+/* HELPERS */
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -109,6 +118,38 @@ function updateMetrics() {
   state.viewportWidth = viewport?.clientWidth || window.innerWidth;
   state.worldWidth = world?.offsetWidth || 6600;
   state.playerWidth = player?.offsetWidth || 66;
+  updateQuizMovementBounds();
+}
+
+function updateQuizMovementBounds() {
+  if (!quizPlayerLane || !quizPlayer || !answerA || !answerB) return;
+
+  const laneRect = quizPlayerLane.getBoundingClientRect();
+  const playerWidth = quizPlayer.offsetWidth || 64;
+
+  const leftPortal = answerA.querySelector(".quiz-door__portal");
+  const rightPortal = answerB.querySelector(".quiz-door__portal");
+
+  if (!leftPortal || !rightPortal) return;
+
+  const leftRect = leftPortal.getBoundingClientRect();
+  const rightRect = rightPortal.getBoundingClientRect();
+
+  const laneCenter = laneRect.left + laneRect.width / 2;
+
+  const leftTarget = (leftRect.left + leftRect.width / 2) - laneCenter;
+  const rightTarget = (rightRect.left + rightRect.width / 2) - laneCenter;
+
+  const extraReach = playerWidth * 0.35;
+
+  quizMoveState.minX = Math.floor(leftTarget - extraReach);
+  quizMoveState.maxX = Math.ceil(rightTarget + extraReach);
+
+  quizMoveState.x = clamp(
+    quizMoveState.x,
+    quizMoveState.minX,
+    quizMoveState.maxX
+  );
 }
 
 function setPressed(direction, isPressed) {
@@ -116,9 +157,7 @@ function setPressed(direction, isPressed) {
   if (direction === "right") state.movingRight = isPressed;
 }
 
-/* =========================
-   PLAYER / CAMERA
-========================= */
+/* PLAYER / CAMERA */
 function updatePlayerDirection() {
   if (state.movingLeft && !state.movingRight) {
     state.direction = -1;
@@ -130,6 +169,7 @@ function updatePlayerDirection() {
 }
 
 function updatePlayerMovement(deltaFactor = 1) {
+  if (quizState.active) return;
   if (!player) return;
 
   let moved = false;
@@ -178,9 +218,96 @@ function revealCards() {
   });
 }
 
-/* =========================
-   GAME FLOW
-========================= */
+/* QUIZ PLAYER */
+function updateQuizPlayer() {
+  if (!quizPlayer) return;
+
+  quizPlayer.style.left = `calc(50% + ${quizMoveState.x}px)`;
+
+  if (state.movingLeft && !state.movingRight) {
+    quizPlayer.classList.add("is-facing-left");
+    quizPlayer.classList.add("is-moving");
+  } else if (state.movingRight && !state.movingLeft) {
+    quizPlayer.classList.remove("is-facing-left");
+    quizPlayer.classList.add("is-moving");
+  } else {
+    quizPlayer.classList.remove("is-moving");
+  }
+}
+
+function resetQuizPlayerPosition() {
+  quizMoveState.x = 0;
+  quizMoveState.locked = false;
+  updateQuizMovementBounds();
+  updateQuizPlayer();
+
+  answerA?.classList.remove("is-correct", "is-wrong", "is-awake");
+  answerB?.classList.remove("is-correct", "is-wrong", "is-awake");
+}
+
+function moveQuizPlayer() {
+  if (!quizState.active || quizMoveState.locked) return;
+
+  if (state.movingLeft && !state.movingRight) {
+    quizMoveState.x -= quizMoveState.speed;
+  }
+
+  if (state.movingRight && !state.movingLeft) {
+    quizMoveState.x += quizMoveState.speed;
+  }
+
+  quizMoveState.x = clamp(
+    quizMoveState.x,
+    quizMoveState.minX,
+    quizMoveState.maxX
+  );
+
+  updateQuizPlayer();
+  checkQuizDoorCollision();
+}
+
+function checkQuizDoorCollision() {
+  if (!quizState.active || quizMoveState.locked || !quizPlayer || !answerA || !answerB) {
+    return;
+  }
+
+  const leftPortal = answerA.querySelector(".quiz-door__portal");
+  const rightPortal = answerB.querySelector(".quiz-door__portal");
+
+  if (!leftPortal || !rightPortal) return;
+
+  const playerRect = quizPlayer.getBoundingClientRect();
+  const leftRect = leftPortal.getBoundingClientRect();
+  const rightRect = rightPortal.getBoundingClientRect();
+
+  const playerCenterX = playerRect.left + playerRect.width / 2;
+  const playerBottom = playerRect.bottom;
+
+  const leftCenterX = leftRect.left + leftRect.width / 2;
+  const rightCenterX = rightRect.left + rightRect.width / 2;
+
+  const leftDistance = Math.abs(playerCenterX - leftCenterX);
+  const rightDistance = Math.abs(playerCenterX - rightCenterX);
+
+  const sameHeightLeft = playerBottom > leftRect.top + 18;
+  const sameHeightRight = playerBottom > rightRect.top + 18;
+
+  answerA.classList.toggle("is-awake", leftDistance < 58 && sameHeightLeft);
+  answerB.classList.toggle("is-awake", rightDistance < 58 && sameHeightRight);
+
+  if (leftDistance < 18 && sameHeightLeft) {
+    quizMoveState.locked = true;
+    handleAnswer(0);
+    return;
+  }
+
+  if (rightDistance < 18 && sameHeightRight) {
+    quizMoveState.locked = true;
+    handleAnswer(1);
+  }
+}
+
+/* GAME FLOW */
 function openChoiceScreen() {
   state.finished = true;
   state.movingLeft = false;
@@ -210,18 +337,32 @@ function openQuiz() {
   quizState.lives = 3;
   quizState.current = 0;
 
-  renderLives();
-  renderQuestion();
+  quizMoveState.active = true;
+  quizMoveState.locked = false;
 
   if (quizScreen) {
     quizScreen.classList.remove("is-hidden-screen");
     quizScreen.classList.add("is-visible");
     quizScreen.setAttribute("aria-hidden", "false");
   }
+
+  renderLives();
+  renderQuestion();
+
+  requestAnimationFrame(() => {
+    updateQuizMovementBounds();
+    resetQuizPlayerPosition();
+    updateQuizPlayer();
+  });
+
+  state.finished = false;
+  startLoop();
 }
 
 function closeQuiz() {
   quizState.active = false;
+  quizMoveState.active = false;
+  quizMoveState.locked = false;
 
   if (quizScreen) {
     quizScreen.classList.remove("is-visible");
@@ -241,6 +382,11 @@ function showOutroAfterQuiz() {
 }
 
 function finishJourney() {
+  state.finished = true;
+  state.movingLeft = false;
+  state.movingRight = false;
+  player?.classList.remove("is-moving");
+  cancelAnimationFrame(state.rafId);
   openChoiceScreen();
 }
 
@@ -310,9 +456,7 @@ function checkDoorCollision() {
   }
 }
 
-/* =========================
-   QUIZ
-========================= */
+/* QUIZ */
 function renderLives() {
   if (!quizLives) return;
 
@@ -328,9 +472,7 @@ function renderQuestion() {
   if (!current) return;
 
   if (quizCounter) {
-    quizCounter.textContent = `Question ${quizState.current + 1} / ${
-      quizQuestions.length
-    }`;
+    quizCounter.textContent = `Question ${quizState.current + 1} / ${quizQuestions.length}`;
   }
 
   if (quizQuestion) {
@@ -349,8 +491,10 @@ function renderQuestion() {
     quizFeedback.textContent = "";
   }
 
-  answerA?.classList.remove("is-correct", "is-wrong");
-  answerB?.classList.remove("is-correct", "is-wrong");
+  requestAnimationFrame(() => {
+    updateQuizMovementBounds();
+    resetQuizPlayerPosition();
+  });
 }
 
 function resetQuiz() {
@@ -383,6 +527,7 @@ function handleAnswer(selectedIndex) {
 
     setTimeout(() => {
       quizState.current += 1;
+
       if (quizState.current >= quizQuestions.length) {
         showOutroAfterQuiz();
       } else {
@@ -411,6 +556,7 @@ function handleAnswer(selectedIndex) {
 
       setTimeout(() => {
         quizState.current += 1;
+
         if (quizState.current >= quizQuestions.length) {
           showOutroAfterQuiz();
         } else {
@@ -421,9 +567,7 @@ function handleAnswer(selectedIndex) {
   }
 }
 
-/* =========================
-   LOOP
-========================= */
+/* LOOP */
 function gameLoop(timestamp) {
   if (!state.started || state.finished) return;
 
@@ -432,11 +576,15 @@ function gameLoop(timestamp) {
   state.lastTime = timestamp;
   const deltaFactor = Math.min(delta / 16.67, 1.8);
 
-  updatePlayerMovement(deltaFactor);
-  updateCamera();
-  updateProgress();
-  revealCards();
-  checkDoorCollision();
+  if (!quizState.active) {
+    updatePlayerMovement(deltaFactor);
+    updateCamera();
+    updateProgress();
+    revealCards();
+    checkDoorCollision();
+  } else {
+    moveQuizPlayer();
+  }
 
   state.rafId = requestAnimationFrame(gameLoop);
 }
@@ -447,9 +595,7 @@ function startLoop() {
   state.rafId = requestAnimationFrame(gameLoop);
 }
 
-/* =========================
-   INPUT
-========================= */
+/* INPUT */
 function handleKey(event, isPressed) {
   const key = event.key.toLowerCase();
 
@@ -485,9 +631,7 @@ function bindPressable(button, direction) {
   button.addEventListener("touchcancel", pressEnd, { passive: false });
 }
 
-/* =========================
-   MUSIC
-========================= */
+/* MUSIC */
 function setMusicIcon() {
   if (!musicIcon) return;
 
@@ -573,9 +717,7 @@ async function unmuteMusic() {
   }
 }
 
-/* =========================
-   EVENTS
-========================= */
+/* EVENTS */
 window.addEventListener("keydown", (event) => handleKey(event, true));
 window.addEventListener("keyup", (event) => handleKey(event, false));
 
@@ -583,11 +725,13 @@ window.addEventListener("blur", () => {
   state.movingLeft = false;
   state.movingRight = false;
   player?.classList.remove("is-moving");
+  quizPlayer?.classList.remove("is-moving");
 });
 
 window.addEventListener("resize", () => {
   updateMetrics();
   updateCamera();
+  updateQuizPlayer();
 });
 
 bindPressable(leftBtn, "left");
@@ -596,18 +740,8 @@ bindPressable(rightBtn, "right");
 startBtn?.addEventListener("click", startJourney);
 repeatBtn?.addEventListener("click", resetJourney);
 
-if (continueBtn) {
-  continueBtn.addEventListener("click", () => {
-    openQuiz();
-  });
-}
-
-repeatJourneyBtn?.addEventListener("click", () => {
-  resetJourney();
-});
-
-answerA?.addEventListener("click", () => handleAnswer(0));
-answerB?.addEventListener("click", () => handleAnswer(1));
+continueBtn?.addEventListener("click", openQuiz);
+repeatJourneyBtn?.addEventListener("click", resetJourney);
 
 if (bgMusic) {
   bgMusic.volume = 0;
@@ -640,42 +774,22 @@ if (musicToggle) {
   };
 
   musicToggle.addEventListener("click", handleMusicToggle);
-  musicToggle.addEventListener("touchend", handleMusicToggle, {
-    passive: false,
-  });
+  musicToggle.addEventListener("touchend", handleMusicToggle, { passive: false });
 
-  musicToggle.addEventListener(
-    "touchstart",
-    (event) => {
-      event.stopPropagation();
-    },
-    { passive: true }
-  );
+  musicToggle.addEventListener("touchstart", (event) => {
+    event.stopPropagation();
+  }, { passive: true });
 
-  musicToggle.addEventListener(
-    "touchmove",
-    (event) => {
-      event.stopPropagation();
-    },
-    { passive: true }
-  );
+  musicToggle.addEventListener("touchmove", (event) => {
+    event.stopPropagation();
+  }, { passive: true });
 }
 
-/* =========================
-   INIT
-========================= */
+/* INIT */
 updateMetrics();
 updateCamera();
 updateProgress();
-closeChoiceScreen();
-closeQuiz();
-outroScreen?.classList.add("is-hidden");
-outroScreen?.setAttribute("aria-hidden", "true");
-setMusicIcon();
-
-updateMetrics();
-updateCamera();
-updateProgress();
+updateQuizPlayer();
 
 if (choiceScreen) {
   choiceScreen.classList.add("is-hidden-screen");

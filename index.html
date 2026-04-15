@@ -258,7 +258,11 @@
       </section>
 
       <!-- CHOICE AFTER DOOR -->
-      <section class="choice-screen is-hidden-screen" id="choiceScreen" aria-hidden="true">
+      <section
+        class="choice-screen is-hidden-screen"
+        id="choiceScreen"
+        aria-hidden="true"
+      >
         <div class="choice-screen__inner">
           <p class="eyebrow">The Gate Has Opened</p>
           <h2>Perjalanan belum benar-benar selesai.</h2>
@@ -280,7 +284,11 @@
       </section>
 
       <!-- QUIZ -->
-      <section class="quiz-screen is-hidden-screen" id="quizScreen" aria-hidden="true">
+      <section
+        class="quiz-screen is-hidden-screen"
+        id="quizScreen"
+        aria-hidden="true"
+      >
         <div class="quiz-hud">
           <div class="quiz-lives" id="quizLives">❤ ❤ ❤</div>
           <div class="quiz-counter" id="quizCounter">Question 1 / 5</div>
@@ -293,32 +301,97 @@
           </div>
 
           <div class="quiz-doors">
-            <button
-              class="answer-door answer-door--left"
+            <div
+              class="quiz-door quiz-door--left"
               id="answerA"
-              type="button"
+              data-answer="0"
+              aria-label="Jawaban kiri"
             >
-              <span class="answer-door__glow"></span>
-              <span class="answer-door__frame">
-                <span class="answer-door__label" id="answerAText">
-                  Mengelola perangkat keras dan software
-                </span>
-              </span>
-            </button>
+              <div class="quiz-door__aura"></div>
 
-            <button
-              class="answer-door answer-door--right"
+              <div class="quiz-door__roots">
+                <span class="root root--1"></span>
+                <span class="root root--2"></span>
+                <span class="root root--3"></span>
+                <span class="root root--4"></span>
+              </div>
+
+              <div class="quiz-door__pillars">
+                <span class="pillar pillar--left"></span>
+                <span class="pillar pillar--right"></span>
+              </div>
+              <div>
+                <div class="quiz-door__label" id="answerAText">
+                  Mengelola perangkat keras dan software
+                </div>
+              </div>
+              <div class="quiz-door__portal">
+                <div class="quiz-door__pixel-grid"></div>
+                <div class="quiz-door__inner-light"></div>
+                <div class="quiz-door__core"></div>
+              </div>
+            </div>
+
+            <div
+              class="quiz-door quiz-door--right"
               id="answerB"
-              type="button"
+              data-answer="1"
+              aria-label="Jawaban kanan"
             >
-              <span class="answer-door__glow"></span>
-              <span class="answer-door__frame">
-                <span class="answer-door__label" id="answerBText">
+              <div class="quiz-door__aura"></div>
+
+              <div class="quiz-door__roots">
+                <span class="root root--1"></span>
+                <span class="root root--2"></span>
+                <span class="root root--3"></span>
+                <span class="root root--4"></span>
+              </div>
+
+              <div class="quiz-door__pillars">
+                <span class="pillar pillar--left"></span>
+                <span class="pillar pillar--right"></span>
+              </div>
+              
+              <div>
+                <div class="quiz-door__label" id="answerBText">
                   Meningkatkan kualitas monitor
-                </span>
-              </span>
-            </button>
+                </div>
+              </div>
+
+              <div class="quiz-door__portal">
+                <div class="quiz-door__pixel-grid"></div>
+                <div class="quiz-door__inner-light"></div>
+                <div class="quiz-door__core"></div>
+              </div>
+            </div>
           </div>
+
+          <div class="quiz-player-lane">
+            <div class="quiz-player" id="quizPlayer" aria-hidden="true">
+              <div class="player__shadow"></div>
+              <div class="player__sprite">
+                <span class="px px--hair1"></span>
+                <span class="px px--hair2"></span>
+                <span class="px px--face1"></span>
+                <span class="px px--face2"></span>
+                <span class="px px--eye1"></span>
+                <span class="px px--eye2"></span>
+                <span class="px px--scarf1"></span>
+                <span class="px px--scarf2"></span>
+                <span class="px px--body1"></span>
+                <span class="px px--body2"></span>
+                <span class="px px--arm1"></span>
+                <span class="px px--arm2"></span>
+                <span class="px px--leg1"></span>
+                <span class="px px--leg2"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-ground-wrap">
+          <div class="quiz-ground-line"></div>
+          <div class="quiz-ground"></div>
         </div>
 
         <div class="quiz-feedback" id="quizFeedback"></div>
