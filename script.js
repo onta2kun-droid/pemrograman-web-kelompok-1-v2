@@ -673,6 +673,7 @@ function gameLoop(timestamp) {
     updateCamera();
     updateProgress();
     revealCards();
+    updateNPCs();
     checkDoorCollision();
   } else {
     moveQuizPlayer();
@@ -920,3 +921,18 @@ if (outroScreen) {
 }
 
 setMusicIcon();
+
+const npcs = [...document.querySelectorAll(".npc")];
+
+function updateNPCs() {
+  npcs.forEach((npc) => {
+    const npcX = npc.offsetLeft;
+    const distance = Math.abs(state.playerX - npcX);
+
+    if (distance < 220) {
+      npc.classList.add("is-active");
+    } else {
+      npc.classList.remove("is-active");
+    }
+  });
+}
