@@ -8,29 +8,35 @@
   </head>
   <body>
     <main class="game-shell">
+      <!-- INTRO -->
       <section class="intro-screen" id="introScreen">
         <div class="intro-screen__inner">
           <p class="eyebrow">Interactive Journey</p>
           <h1>Menjelajah Evolusi Komputer</h1>
           <p>
-            Gerakkan karakter ke kanan untuk membuka tiap era komputasi. Saat sampai di pintu akhir,
-            perjalanan akan selesai dan kamu bisa mengulang dari awal.
+            Gerakkan karakter ke kanan untuk membuka tiap era komputasi.
+            Saat sampai di gerbang akhir, kamu bisa melanjutkan ke quiz
+            atau mengulang perjalanan dari awal.
           </p>
-          <p>
-            Use Desktop PC or Laptop for Better Experience.
-          </p>
+
           <div class="intro-screen__hints">
             <span>Desktop: A / D atau ← / →</span>
             <span>Mobile: tombol kiri / kanan</span>
           </div>
-          <button class="primary-btn" id="startBtn" type="button">Mulai Perjalanan</button>
+
+          <button class="primary-btn" id="startBtn" type="button">
+            Mulai Perjalanan
+          </button>
         </div>
       </section>
 
+      <!-- GAME -->
       <section class="game-screen" id="gameScreen" aria-label="Game area">
         <div class="hud">
           <div class="hud__title">Evolution of Computers</div>
-          <div class="hud__progress"><span id="progressText">0%</span></div>
+          <div class="hud__progress">
+            <span id="progressText">0%</span>
+          </div>
         </div>
 
         <div class="viewport" id="viewport">
@@ -41,89 +47,156 @@
 
             <div class="stars"></div>
 
-            <article class="floating-card" data-x="320" style="--fx:320px; --fy:120px; --delay:0s;">
+            <article
+              class="floating-card"
+              data-x="320"
+              style="--fx:320px; --fy:120px; --delay:0s;"
+            >
               <img src="images/pascaline.png" alt="Pascaline" />
               <div class="floating-card__text">
                 <span>1642</span>
                 <h2>Pascaline</h2>
-                <p>Mesin hitung mekanik awal yang menjadi fondasi pemikiran komputasi.</p>
+                <p>
+                  Mesin hitung mekanik awal yang menjadi fondasi pemikiran
+                  komputasi.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="920" style="--fx:920px; --fy:170px; --delay:.35s;">
+            <article
+              class="floating-card"
+              data-x="920"
+              style="--fx:920px; --fy:170px; --delay:.35s;"
+            >
               <img src="images/analytical-engine.png" alt="Analytical Engine" />
               <div class="floating-card__text">
                 <span>1837</span>
                 <h2>Analytical Engine</h2>
-                <p>Konsep mesin serbaguna dengan gagasan input, proses, dan memori.</p>
+                <p>
+                  Konsep mesin serbaguna dengan gagasan input, proses, dan
+                  memori.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="1520" style="--fx:1520px; --fy:110px; --delay:.12s;">
+            <article
+              class="floating-card"
+              data-x="1520"
+              style="--fx:1520px; --fy:110px; --delay:.12s;"
+            >
               <img src="images/eniac.png" alt="ENIAC" />
               <div class="floating-card__text">
                 <span>1946</span>
                 <h2>ENIAC</h2>
-                <p>Komputer elektronik awal berukuran raksasa dengan daya komputasi besar.</p>
+                <p>
+                  Komputer elektronik awal berukuran raksasa dengan daya
+                  komputasi besar.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="2200" style="--fx:2200px; --fy:160px; --delay:.45s;">
+            <article
+              class="floating-card"
+              data-x="2200"
+              style="--fx:2200px; --fy:160px; --delay:.45s;"
+            >
               <img src="images/transistor-computer.png" alt="Era transistor" />
               <div class="floating-card__text">
                 <span>1950-an</span>
                 <h2>Era Transistor</h2>
-                <p>Ukuran mengecil, efisiensi naik, dan komputer menjadi lebih andal.</p>
+                <p>
+                  Ukuran mengecil, efisiensi naik, dan komputer menjadi lebih
+                  andal.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="2860" style="--fx:2860px; --fy:115px; --delay:.18s;">
+            <article
+              class="floating-card"
+              data-x="2860"
+              style="--fx:2860px; --fy:115px; --delay:.18s;"
+            >
               <img src="images/microprocessor.png" alt="Mikroprosesor" />
               <div class="floating-card__text">
                 <span>1971</span>
                 <h2>Mikroprosesor</h2>
-                <p>CPU masuk ke satu chip kecil dan membuka jalan bagi komputer personal.</p>
+                <p>
+                  CPU masuk ke satu chip kecil dan membuka jalan bagi komputer
+                  personal.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="3540" style="--fx:3540px; --fy:165px; --delay:.25s;">
-              <img src="images/personal-computer.png" alt="Komputer personal" />
+            <article
+              class="floating-card"
+              data-x="3540"
+              style="--fx:3540px; --fy:165px; --delay:.25s;"
+            >
+              <img
+                src="images/personal-computer.png"
+                alt="Komputer personal"
+              />
               <div class="floating-card__text">
                 <span>1970–1980-an</span>
                 <h2>Komputer Personal</h2>
-                <p>Komputer mulai masuk rumah dan kantor, lebih dekat dengan kehidupan sehari-hari.</p>
+                <p>
+                  Komputer mulai masuk rumah dan kantor, lebih dekat dengan
+                  kehidupan sehari-hari.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="4200" style="--fx:4200px; --fy:125px; --delay:.4s;">
+            <article
+              class="floating-card"
+              data-x="4200"
+              style="--fx:4200px; --fy:125px; --delay:.4s;"
+            >
               <img src="images/laptop.png" alt="Laptop dan internet" />
               <div class="floating-card__text">
                 <span>1990-an</span>
                 <h2>Laptop & Internet</h2>
-                <p>Komputasi menjadi portabel dan terhubung secara global.</p>
+                <p>
+                  Komputasi menjadi portabel dan terhubung secara global.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="4860" style="--fx:4860px; --fy:175px; --delay:.08s;">
+            <article
+              class="floating-card"
+              data-x="4860"
+              style="--fx:4860px; --fy:175px; --delay:.08s;"
+            >
               <img src="images/smartphone.png" alt="Smartphone" />
               <div class="floating-card__text">
                 <span>2000-an</span>
                 <h2>Smartphone</h2>
-                <p>Daya komputasi berpindah ke genggaman dan selalu ikut bersama pengguna.</p>
+                <p>
+                  Daya komputasi berpindah ke genggaman dan selalu ikut bersama
+                  pengguna.
+                </p>
               </div>
             </article>
 
-            <article class="floating-card" data-x="5520" style="--fx:5520px; --fy:120px; --delay:.3s;">
+            <article
+              class="floating-card"
+              data-x="5520"
+              style="--fx:5520px; --fy:120px; --delay:.3s;"
+            >
               <img src="images/modern-computing.jpg" alt="Komputasi modern" />
               <div class="floating-card__text">
                 <span>Sekarang</span>
                 <h2>Komputasi Modern</h2>
-                <p>Desktop, cloud, AI, dan perangkat mobile hadir dalam ekosistem komputasi modern.</p>
+                <p>
+                  Desktop, cloud, AI, dan perangkat mobile hadir dalam ekosistem
+                  komputasi modern.
+                </p>
               </div>
             </article>
 
+            <!-- FINAL DOOR -->
             <div class="door" id="door" aria-label="Gerbang akhir perjalanan">
               <div class="door__aura"></div>
+
               <div class="door__roots">
                 <span class="root root--1"></span>
                 <span class="root root--2"></span>
@@ -151,6 +224,8 @@
                 <span></span>
               </div>
             </div>
+
+            <!-- PLAYER -->
             <div class="player" id="player" aria-hidden="true">
               <div class="player__shadow"></div>
               <div class="player__sprite">
@@ -182,26 +257,110 @@
         </div>
       </section>
 
+      <!-- CHOICE AFTER DOOR -->
+      <section class="choice-screen is-hidden-screen" id="choiceScreen" aria-hidden="true">
+        <div class="choice-screen__inner">
+          <p class="eyebrow">The Gate Has Opened</p>
+          <h2>Perjalanan belum benar-benar selesai.</h2>
+          <p>
+            Kamu telah sampai di ujung jalur, tetapi masih ada satu langkah
+            lagi yang menunggu. Pilih untuk melanjutkan ke quiz, atau kembali
+            dan menelusuri perjalanan ini sekali lagi.
+          </p>
+
+          <div class="choice-actions">
+            <button class="primary-btn" id="continueBtn" type="button">
+              Continue
+            </button>
+            <button class="secondary-btn" id="repeatJourneyBtn" type="button">
+              Repeat Journey
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUIZ -->
+      <section class="quiz-screen is-hidden-screen" id="quizScreen" aria-hidden="true">
+        <div class="quiz-hud">
+          <div class="quiz-lives" id="quizLives">❤ ❤ ❤</div>
+          <div class="quiz-counter" id="quizCounter">Question 1 / 5</div>
+        </div>
+
+        <div class="quiz-sky">
+          <div class="quiz-cloud" id="quizCloud">
+            <p class="quiz-label">Operating System Quiz</p>
+            <h2 id="quizQuestion">Apa fungsi utama sistem operasi?</h2>
+          </div>
+
+          <div class="quiz-doors">
+            <button
+              class="answer-door answer-door--left"
+              id="answerA"
+              type="button"
+            >
+              <span class="answer-door__glow"></span>
+              <span class="answer-door__frame">
+                <span class="answer-door__label" id="answerAText">
+                  Mengelola perangkat keras dan software
+                </span>
+              </span>
+            </button>
+
+            <button
+              class="answer-door answer-door--right"
+              id="answerB"
+              type="button"
+            >
+              <span class="answer-door__glow"></span>
+              <span class="answer-door__frame">
+                <span class="answer-door__label" id="answerBText">
+                  Meningkatkan kualitas monitor
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="quiz-feedback" id="quizFeedback"></div>
+      </section>
+
+      <!-- OUTRO -->
       <section class="outro-screen" id="outroScreen" aria-hidden="true">
         <div class="outro-screen__inner">
           <p class="eyebrow">Journey Complete</p>
-          <h2>Dari Mesin ke Dunia Digital</h2>
+          <h2>Every Ending Holds Another Beginning</h2>
           <p>
-            “The only way to discover the limits of the possible is to go beyond them into the impossible.”
-            — Arthur C. Clarke
+            Dari mesin-mesin awal hingga dunia digital yang terus berubah,
+            perjalanan ini bukan hanya tentang teknologi, tetapi tentang
+            bagaimana setiap perubahan membuka kemungkinan yang baru.
           </p>
-          <button class="primary-btn" id="repeatBtn" type="button">Repeat Journey</button>
+
+          <p class="quote">
+            “The only way to discover the limits of the possible is to go beyond
+            them into the impossible.”
+          </p>
+          <p class="quote-author">— Arthur C. Clarke</p>
+
+          <button class="primary-btn" id="repeatBtn" type="button">
+            Repeat Journey
+          </button>
         </div>
       </section>
+
+      <!-- MUSIC -->
+      <button
+        id="musicToggle"
+        class="music-toggle"
+        type="button"
+        aria-label="Mute music"
+      >
+        <img id="musicIcon" src="icons/unmute.png" alt="Music on" />
+      </button>
+
+      <audio id="bgMusic" loop preload="auto">
+        <source src="audio/bg-music.mp3" type="audio/mpeg" />
+      </audio>
     </main>
-
-    <button id="musicToggle" class="music-toggle" type="button" aria-label="Mute music">
-      <img id="musicIcon" src="icons/unmute.png" alt="Music on" />
-    </button>
-
-    <audio id="bgMusic" loop preload="auto">
-      <source src="audio/bg-music.mp3" type="audio/mpeg" />
-    </audio>
 
     <script src="script.js"></script>
   </body>

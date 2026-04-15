@@ -1,8 +1,8 @@
 const introScreen = document.getElementById("introScreen");
 const outroScreen = document.getElementById("outroScreen");
-const gameScreen = document.getElementById("gameScreen");
 const startBtn = document.getElementById("startBtn");
 const repeatBtn = document.getElementById("repeatBtn");
+
 const world = document.getElementById("world");
 const viewport = document.getElementById("viewport");
 const player = document.getElementById("player");
@@ -12,12 +12,34 @@ const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 const floatingCards = [...document.querySelectorAll(".floating-card")];
 
+const choiceScreen = document.getElementById("choiceScreen");
+const continueBtn = document.getElementById("continueBtn");
+const repeatJourneyBtn = document.getElementById("repeatJourneyBtn");
+
+const quizScreen = document.getElementById("quizScreen");
+const quizLives = document.getElementById("quizLives");
+const quizCounter = document.getElementById("quizCounter");
+const quizQuestion = document.getElementById("quizQuestion");
+const answerA = document.getElementById("answerA");
+const answerB = document.getElementById("answerB");
+const answerAText = document.getElementById("answerAText");
+const answerBText = document.getElementById("answerBText");
+const quizFeedback = document.getElementById("quizFeedback");
+
+const bgMusic = document.getElementById("bgMusic");
+const musicToggle = document.getElementById("musicToggle");
+const musicIcon = document.getElementById("musicIcon");
+
+const ICON_UNMUTE = "icons/unmute.png";
+const ICON_MUTE = "icons/mute.png";
+const MUSIC_VOLUME = window.matchMedia("(max-width: 768px)").matches ? 0.18 : 0.28;
+
 const state = {
   started: false,
   finished: false,
-  direction: 1,
   movingLeft: false,
   movingRight: false,
+  direction: 1,
   speed: 4.2,
   playerX: 120,
   minX: 80,
@@ -30,14 +52,63 @@ const state = {
   rafId: null,
 };
 
+const quizQuestions = [
+  {
+    question: "Apa fungsi utama sistem operasi?",
+    answers: [
+      "Mengelola perangkat keras dan software",
+      "Meningkatkan kualitas monitor",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Manakah yang termasuk sistem operasi?",
+    answers: ["Windows", "Microsoft Word"],
+    correct: 0,
+  },
+  {
+    question: "Apa tugas kernel dalam sistem operasi?",
+    answers: [
+      "Mengatur inti komunikasi antara hardware dan software",
+      "Menghias tampilan desktop",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Sistem operasi mobile yang umum dipakai adalah...",
+    answers: ["Android", "Photoshop"],
+    correct: 0,
+  },
+  {
+    question: "Mengapa sistem operasi penting?",
+    answers: [
+      "Karena menjadi penghubung antara pengguna, aplikasi, dan perangkat",
+      "Karena hanya dipakai untuk membuka file musik",
+    ],
+    correct: 0,
+  },
+];
+
+const quizState = {
+  active: false,
+  lives: 3,
+  current: 0,
+};
+
+let isMuted = false;
+let fadeFrame = null;
+
+/* =========================
+   HELPERS
+========================= */
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function updateMetrics() {
   state.viewportWidth = viewport?.clientWidth || window.innerWidth;
   state.worldWidth = world?.offsetWidth || 6600;
   state.playerWidth = player?.offsetWidth || 66;
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
 }
 
 function setPressed(direction, isPressed) {
@@ -45,18 +116,22 @@ function setPressed(direction, isPressed) {
   if (direction === "right") state.movingRight = isPressed;
 }
 
+/* =========================
+   PLAYER / CAMERA
+========================= */
 function updatePlayerDirection() {
   if (state.movingLeft && !state.movingRight) {
     state.direction = -1;
-    player.classList.add("is-facing-left");
+    player?.classList.add("is-facing-left");
   } else if (state.movingRight && !state.movingLeft) {
     state.direction = 1;
-    player.classList.remove("is-facing-left");
+    player?.classList.remove("is-facing-left");
   }
 }
 
 function updatePlayerMovement(deltaFactor = 1) {
-  const wasMoving = player.classList.contains("is-moving");
+  if (!player) return;
+
   let moved = false;
 
   if (state.movingLeft && !state.movingRight) {
@@ -71,15 +146,12 @@ function updatePlayerMovement(deltaFactor = 1) {
 
   state.playerX = clamp(state.playerX, state.minX, state.maxX);
   player.classList.toggle("is-moving", moved);
-
-  if (moved !== wasMoving) {
-    player.offsetHeight;
-  }
-
   updatePlayerDirection();
 }
 
 function updateCamera() {
+  if (!world || !player) return;
+
   const targetCameraX = clamp(
     state.playerX - state.viewportWidth * 0.35,
     0,
@@ -91,7 +163,9 @@ function updateCamera() {
 }
 
 function updateProgress() {
-  const progress = ((state.playerX - state.minX) / (state.maxX - state.minX)) * 100;
+  if (!progressText) return;
+  const progress =
+    ((state.playerX - state.minX) / (state.maxX - state.minX)) * 100;
   progressText.textContent = `${Math.round(clamp(progress, 0, 100))}%`;
 }
 
@@ -104,15 +178,252 @@ function revealCards() {
   });
 }
 
+/* =========================
+   GAME FLOW
+========================= */
+function openChoiceScreen() {
+  state.finished = true;
+  state.movingLeft = false;
+  state.movingRight = false;
+  player?.classList.remove("is-moving");
+  cancelAnimationFrame(state.rafId);
+
+  if (choiceScreen) {
+    choiceScreen.classList.remove("is-hidden-screen");
+    choiceScreen.classList.add("is-visible");
+    choiceScreen.setAttribute("aria-hidden", "false");
+  }
+}
+
+function closeChoiceScreen() {
+  if (choiceScreen) {
+    choiceScreen.classList.remove("is-visible");
+    choiceScreen.classList.add("is-hidden-screen");
+    choiceScreen.setAttribute("aria-hidden", "true");
+  }
+}
+
+function openQuiz() {
+  closeChoiceScreen();
+
+  quizState.active = true;
+  quizState.lives = 3;
+  quizState.current = 0;
+
+  renderLives();
+  renderQuestion();
+
+  if (quizScreen) {
+    quizScreen.classList.remove("is-hidden-screen");
+    quizScreen.classList.add("is-visible");
+    quizScreen.setAttribute("aria-hidden", "false");
+  }
+}
+
+function closeQuiz() {
+  quizState.active = false;
+
+  if (quizScreen) {
+    quizScreen.classList.remove("is-visible");
+    quizScreen.classList.add("is-hidden-screen");
+    quizScreen.setAttribute("aria-hidden", "true");
+  }
+}
+
+function showOutroAfterQuiz() {
+  closeQuiz();
+
+  if (outroScreen) {
+    outroScreen.classList.remove("is-hidden", "is-hidden-screen");
+    outroScreen.classList.add("is-visible");
+    outroScreen.setAttribute("aria-hidden", "false");
+  }
+}
+
+function finishJourney() {
+  openChoiceScreen();
+}
+
+function startJourney() {
+  state.started = true;
+  state.finished = false;
+  state.playerX = 120;
+  state.movingLeft = false;
+  state.movingRight = false;
+  state.direction = 1;
+
+  introScreen?.classList.add("is-hidden");
+  introScreen?.setAttribute("aria-hidden", "true");
+
+  outroScreen?.classList.remove("is-visible");
+  outroScreen?.classList.add("is-hidden");
+  outroScreen?.setAttribute("aria-hidden", "true");
+
+  closeChoiceScreen();
+  closeQuiz();
+
+  floatingCards.forEach((card) => card.classList.remove("is-visible"));
+  door?.classList.remove("is-awake");
+  player?.classList.remove("is-moving", "is-facing-left");
+
+  updateCamera();
+  updateProgress();
+  startLoop();
+}
+
+function resetJourney() {
+  closeChoiceScreen();
+  closeQuiz();
+
+  state.started = true;
+  state.finished = false;
+  state.playerX = 120;
+  state.movingLeft = false;
+  state.movingRight = false;
+  state.direction = 1;
+
+  player?.classList.remove("is-moving", "is-facing-left");
+  floatingCards.forEach((card) => card.classList.remove("is-visible"));
+  door?.classList.remove("is-awake");
+
+  outroScreen?.classList.remove("is-visible");
+  outroScreen?.classList.add("is-hidden");
+  outroScreen?.setAttribute("aria-hidden", "true");
+
+  updateCamera();
+  updateProgress();
+  startLoop();
+}
+
 function checkDoorCollision() {
   const playerFront = state.playerX + state.playerWidth * 0.7;
   const doorStart = state.doorX;
+
+  if (playerFront > doorStart - 260) {
+    door?.classList.add("is-awake");
+  } else {
+    door?.classList.remove("is-awake");
+  }
 
   if (!state.finished && playerFront >= doorStart) {
     finishJourney();
   }
 }
 
+/* =========================
+   QUIZ
+========================= */
+function renderLives() {
+  if (!quizLives) return;
+
+  const full = "❤";
+  const empty = "♡";
+  quizLives.textContent = `${full.repeat(quizState.lives)}${
+    quizState.lives < 3 ? " " + empty.repeat(3 - quizState.lives) : ""
+  }`;
+}
+
+function renderQuestion() {
+  const current = quizQuestions[quizState.current];
+  if (!current) return;
+
+  if (quizCounter) {
+    quizCounter.textContent = `Question ${quizState.current + 1} / ${
+      quizQuestions.length
+    }`;
+  }
+
+  if (quizQuestion) {
+    quizQuestion.textContent = current.question;
+  }
+
+  if (answerAText) {
+    answerAText.textContent = current.answers[0];
+  }
+
+  if (answerBText) {
+    answerBText.textContent = current.answers[1];
+  }
+
+  if (quizFeedback) {
+    quizFeedback.textContent = "";
+  }
+
+  answerA?.classList.remove("is-correct", "is-wrong");
+  answerB?.classList.remove("is-correct", "is-wrong");
+}
+
+function resetQuiz() {
+  quizState.active = true;
+  quizState.lives = 3;
+  quizState.current = 0;
+  renderLives();
+  renderQuestion();
+}
+
+function handleAnswer(selectedIndex) {
+  if (!quizState.active) return;
+
+  const current = quizQuestions[quizState.current];
+  if (!current) return;
+
+  const isCorrect = current.correct === selectedIndex;
+
+  answerA?.classList.remove("is-correct", "is-wrong");
+  answerB?.classList.remove("is-correct", "is-wrong");
+
+  const selectedDoor = selectedIndex === 0 ? answerA : answerB;
+  const correctDoor = current.correct === 0 ? answerA : answerB;
+
+  if (isCorrect) {
+    selectedDoor?.classList.add("is-correct");
+    if (quizFeedback) {
+      quizFeedback.textContent = "Benar. Melangkah ke pertanyaan berikutnya...";
+    }
+
+    setTimeout(() => {
+      quizState.current += 1;
+      if (quizState.current >= quizQuestions.length) {
+        showOutroAfterQuiz();
+      } else {
+        renderQuestion();
+      }
+    }, 900);
+  } else {
+    selectedDoor?.classList.add("is-wrong");
+    correctDoor?.classList.add("is-correct");
+    quizState.lives -= 1;
+    renderLives();
+
+    if (quizState.lives <= 0) {
+      if (quizFeedback) {
+        quizFeedback.textContent = "Nyawamu habis. Quiz akan diulang dari awal.";
+      }
+
+      setTimeout(() => {
+        resetQuiz();
+      }, 1200);
+    } else {
+      if (quizFeedback) {
+        quizFeedback.textContent =
+          "Kurang tepat. Tetap lanjut ke pertanyaan berikutnya.";
+      }
+
+      setTimeout(() => {
+        quizState.current += 1;
+        if (quizState.current >= quizQuestions.length) {
+          showOutroAfterQuiz();
+        } else {
+          renderQuestion();
+        }
+      }, 1000);
+    }
+  }
+}
+
+/* =========================
+   LOOP
+========================= */
 function gameLoop(timestamp) {
   if (!state.started || state.finished) return;
 
@@ -136,41 +447,9 @@ function startLoop() {
   state.rafId = requestAnimationFrame(gameLoop);
 }
 
-function startJourney() {
-  state.started = true;
-  state.finished = false;
-  introScreen.classList.add("is-hidden");
-  outroScreen.classList.remove("is-visible");
-  outroScreen.classList.add("is-hidden");
-  startLoop();
-}
-
-function finishJourney() {
-  state.finished = true;
-  state.movingLeft = false;
-  state.movingRight = false;
-  player.classList.remove("is-moving");
-  cancelAnimationFrame(state.rafId);
-  outroScreen.classList.remove("is-hidden");
-  outroScreen.classList.add("is-visible");
-}
-
-function resetJourney() {
-  state.started = true;
-  state.finished = false;
-  state.playerX = 120;
-  state.movingLeft = false;
-  state.movingRight = false;
-  state.direction = 1;
-  player.classList.remove("is-moving", "is-facing-left");
-  floatingCards.forEach((card) => card.classList.remove("is-visible"));
-  updateCamera();
-  updateProgress();
-  outroScreen.classList.remove("is-visible");
-  outroScreen.classList.add("is-hidden");
-  startLoop();
-}
-
+/* =========================
+   INPUT
+========================= */
 function handleKey(event, isPressed) {
   const key = event.key.toLowerCase();
 
@@ -206,40 +485,9 @@ function bindPressable(button, direction) {
   button.addEventListener("touchcancel", pressEnd, { passive: false });
 }
 
-window.addEventListener("keydown", (event) => handleKey(event, true));
-window.addEventListener("keyup", (event) => handleKey(event, false));
-window.addEventListener("blur", () => {
-  state.movingLeft = false;
-  state.movingRight = false;
-  player.classList.remove("is-moving");
-});
-
-window.addEventListener("resize", () => {
-  updateMetrics();
-  updateCamera();
-});
-
-bindPressable(leftBtn, "left");
-bindPressable(rightBtn, "right");
-
-startBtn?.addEventListener("click", startJourney);
-repeatBtn?.addEventListener("click", resetJourney);
-
-updateMetrics();
-updateCamera();
-updateProgress();
-
-const bgMusic = document.getElementById("bgMusic");
-const musicToggle = document.getElementById("musicToggle");
-const musicIcon = document.getElementById("musicIcon");
-
-const ICON_UNMUTE = "icons/unmute.png";
-const ICON_MUTE = "icons/mute.png";
-const MUSIC_VOLUME = window.matchMedia("(max-width: 768px)").matches ? 0.18 : 0.28;
-
-let isMuted = false;
-let fadeFrame = null;
-
+/* =========================
+   MUSIC
+========================= */
 function setMusicIcon() {
   if (!musicIcon) return;
 
@@ -325,6 +573,42 @@ async function unmuteMusic() {
   }
 }
 
+/* =========================
+   EVENTS
+========================= */
+window.addEventListener("keydown", (event) => handleKey(event, true));
+window.addEventListener("keyup", (event) => handleKey(event, false));
+
+window.addEventListener("blur", () => {
+  state.movingLeft = false;
+  state.movingRight = false;
+  player?.classList.remove("is-moving");
+});
+
+window.addEventListener("resize", () => {
+  updateMetrics();
+  updateCamera();
+});
+
+bindPressable(leftBtn, "left");
+bindPressable(rightBtn, "right");
+
+startBtn?.addEventListener("click", startJourney);
+repeatBtn?.addEventListener("click", resetJourney);
+
+if (continueBtn) {
+  continueBtn.addEventListener("click", () => {
+    openQuiz();
+  });
+}
+
+repeatJourneyBtn?.addEventListener("click", () => {
+  resetJourney();
+});
+
+answerA?.addEventListener("click", () => handleAnswer(0));
+answerB?.addEventListener("click", () => handleAnswer(1));
+
 if (bgMusic) {
   bgMusic.volume = 0;
   setMusicIcon();
@@ -356,7 +640,9 @@ if (musicToggle) {
   };
 
   musicToggle.addEventListener("click", handleMusicToggle);
-  musicToggle.addEventListener("touchend", handleMusicToggle, { passive: false });
+  musicToggle.addEventListener("touchend", handleMusicToggle, {
+    passive: false,
+  });
 
   musicToggle.addEventListener(
     "touchstart",
@@ -375,17 +661,38 @@ if (musicToggle) {
   );
 }
 
-function checkDoorCollision() {
-  const playerFront = state.playerX + state.playerWidth * 0.7;
-  const doorStart = state.doorX;
+/* =========================
+   INIT
+========================= */
+updateMetrics();
+updateCamera();
+updateProgress();
+closeChoiceScreen();
+closeQuiz();
+outroScreen?.classList.add("is-hidden");
+outroScreen?.setAttribute("aria-hidden", "true");
+setMusicIcon();
 
-  if (playerFront > doorStart - 260) {
-    door?.classList.add("is-awake");
-  } else {
-    door?.classList.remove("is-awake");
-  }
+updateMetrics();
+updateCamera();
+updateProgress();
 
-  if (!state.finished && playerFront >= doorStart) {
-    finishJourney();
-  }
+if (choiceScreen) {
+  choiceScreen.classList.add("is-hidden-screen");
+  choiceScreen.classList.remove("is-visible");
+  choiceScreen.setAttribute("aria-hidden", "true");
 }
+
+if (quizScreen) {
+  quizScreen.classList.add("is-hidden-screen");
+  quizScreen.classList.remove("is-visible");
+  quizScreen.setAttribute("aria-hidden", "true");
+}
+
+if (outroScreen) {
+  outroScreen.classList.add("is-hidden");
+  outroScreen.classList.remove("is-visible");
+  outroScreen.setAttribute("aria-hidden", "true");
+}
+
+setMusicIcon();
