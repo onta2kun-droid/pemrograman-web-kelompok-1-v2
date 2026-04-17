@@ -5,3 +5,5 @@ Zaskia Awalia	2405176023
 Az-zahra Nur Ramadani	2405176021  
 Nurul Mustika Sulaiman	24051760  
 Richardo Reksi Ratag	2405176027  
+
+Live Pages bisa di akses di game.knowos.my.id
